@@ -2,17 +2,26 @@ package org.craftedsw.tripservicekata.trip;
 
 import org.craftedsw.tripservicekata.exception.UserNotLoggedInException;
 import org.craftedsw.tripservicekata.user.User;
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.craftedsw.tripservicekata.trip.UserBuilder.aUser;
+import static org.mockito.Mockito.when;
 
+@RunWith(MockitoJUnitRunner.class)
 public class TripServiceTest {
 
-    TripService tripService;
+    @InjectMocks
+    private TripService tripService;
+
+    @Mock
+    private TripDAO tripDAO;
 
     private static final User UNUSED_USER = null;
     private static final User GUEST = null;
@@ -22,15 +31,10 @@ public class TripServiceTest {
     private static final Trip TO_BRAZIL = new Trip();
     private static final Trip TO_LONDON = new Trip();
 
-    @Before
-    public void init() {
-        tripService = new TestableTripService();
-    }
-
     @Test(expected = UserNotLoggedInException.class)
     public void shouldThrowUserNotLoggedInException_whenUserIsNotLoggedIn() {
         // When
-        tripService.getTripsByUser(UNUSED_USER, GUEST);
+        tripService.getFriendTrips(UNUSED_USER, GUEST);
     }
 
     @Test
@@ -42,7 +46,7 @@ public class TripServiceTest {
                         .build();
 
         // When
-        List<Trip> trips = tripService.getTripsByUser(friend, REGISTERED_USER);
+        List<Trip> trips = tripService.getFriendTrips(friend, REGISTERED_USER);
 
         // Then
         assertThat(trips).isEmpty();
@@ -55,19 +59,13 @@ public class TripServiceTest {
                         .friendsWith(ANOTHER_USER, REGISTERED_USER)
                         .withTrips(TO_BRAZIL, TO_LONDON)
                         .build();
+        when(tripDAO.tripsBy(friend)).thenReturn(friend.trips());
 
         // When
-        List<Trip> trips = tripService.getTripsByUser(friend, REGISTERED_USER);
+        List<Trip> trips = tripService.getFriendTrips(friend, REGISTERED_USER);
 
         // Then
         assertThat(trips).containsExactlyInAnyOrder(TO_BRAZIL, TO_LONDON);
-    }
-
-    private class TestableTripService extends TripService {
-        @Override
-        List<Trip> tripsBy(User user) {
-            return user.trips();
-        }
     }
 
 }
