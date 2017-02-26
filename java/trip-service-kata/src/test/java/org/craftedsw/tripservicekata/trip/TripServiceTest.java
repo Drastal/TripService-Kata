@@ -8,6 +8,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.craftedsw.tripservicekata.trip.UserBuilder.aUser;
 
 public class TripServiceTest {
 
@@ -40,9 +41,10 @@ public class TripServiceTest {
     public void shouldReturnEmptyTrips_whenUsersAreNotFriends() {
         // Given
         loggedInUser = REGISTERED_USER;
-        User friend = new User();
-        friend.addTrip(TO_BRAZIL);
-        friend.addFriend(ANOTHER_USER);
+        User friend = aUser()
+                        .friendsWith(ANOTHER_USER)
+                        .withTrips(TO_BRAZIL)
+                        .build();
 
         // When
         List<Trip> trips = tripService.getTripsByUser(friend);
@@ -55,11 +57,10 @@ public class TripServiceTest {
     public void shouldReturnTrips_whenUsersAreFriends() {
         // Given
         loggedInUser = REGISTERED_USER;
-        User friend = new User();
-        friend.addTrip(TO_BRAZIL);
-        friend.addTrip(TO_LONDON);
-        friend.addFriend(ANOTHER_USER);
-        friend.addFriend(loggedInUser);
+        User friend = aUser()
+                        .friendsWith(ANOTHER_USER, loggedInUser)
+                        .withTrips(TO_BRAZIL, TO_LONDON)
+                        .build();
 
         // When
         List<Trip> trips = tripService.getTripsByUser(friend);
