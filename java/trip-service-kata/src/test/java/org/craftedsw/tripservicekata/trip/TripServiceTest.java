@@ -13,7 +13,6 @@ import static org.craftedsw.tripservicekata.trip.UserBuilder.aUser;
 public class TripServiceTest {
 
     TripService tripService;
-    private User loggedInUser;
 
     private static final User UNUSED_USER = null;
     private static final User GUEST = null;
@@ -28,26 +27,22 @@ public class TripServiceTest {
         tripService = new TestableTripService();
     }
 
-
     @Test(expected = UserNotLoggedInException.class)
     public void shouldThrowUserNotLoggedInException_whenUserIsNotLoggedIn() {
-        // Given
-        loggedInUser = GUEST;
         // When
-        tripService.getTripsByUser(UNUSED_USER);
+        tripService.getTripsByUser(UNUSED_USER, GUEST);
     }
 
     @Test
     public void shouldReturnEmptyTrips_whenUsersAreNotFriends() {
         // Given
-        loggedInUser = REGISTERED_USER;
         User friend = aUser()
                         .friendsWith(ANOTHER_USER)
                         .withTrips(TO_BRAZIL)
                         .build();
 
         // When
-        List<Trip> trips = tripService.getTripsByUser(friend);
+        List<Trip> trips = tripService.getTripsByUser(friend, REGISTERED_USER);
 
         // Then
         assertThat(trips).isEmpty();
@@ -56,24 +51,19 @@ public class TripServiceTest {
     @Test
     public void shouldReturnTrips_whenUsersAreFriends() {
         // Given
-        loggedInUser = REGISTERED_USER;
         User friend = aUser()
-                        .friendsWith(ANOTHER_USER, loggedInUser)
+                        .friendsWith(ANOTHER_USER, REGISTERED_USER)
                         .withTrips(TO_BRAZIL, TO_LONDON)
                         .build();
 
         // When
-        List<Trip> trips = tripService.getTripsByUser(friend);
+        List<Trip> trips = tripService.getTripsByUser(friend, REGISTERED_USER);
 
         // Then
         assertThat(trips).containsExactlyInAnyOrder(TO_BRAZIL, TO_LONDON);
     }
 
     private class TestableTripService extends TripService {
-        @Override
-        User getLoggedInUser() {
-            return loggedInUser;
-        }
         @Override
         List<Trip> tripsBy(User user) {
             return user.trips();
