@@ -8,7 +8,7 @@ import static org.craftedsw.tripservicekata.trip.UserBuilder.aUser;
 public class UserTest {
 
     private static final User BOB = new User();
-    private static final User PAUL = new User() ;
+    private static final User PAUL = new User();
 
     @Test
     public void shouldReturnFalse_whenNotFriends() {
